@@ -6,9 +6,8 @@ import (
 	. "github.com/ofabricio/nom"
 )
 
-// ExampleFind shows the usage of the Find parser to collect
-// either the section numbers or the years in the input text.
-func ExampleFind() {
+// Example_find shows the usage of the parser to collect tokens.
+func Example_find() {
 
 	src := `
 		The standard chunk of Lorem Ipsum used since 1966 is reproduced below
@@ -19,44 +18,17 @@ func ExampleFind() {
 	`
 
 	var out []string
-	s := New(src)
-	for s.More() {
-		if m := s.Mark(); s.Match(DIGITS) && s.Opt(s.Mark(), s.Match(".") && s.Match(DIGITS) && s.Match(".") && s.Match(DIGITS)) {
-			out = append(out, s.Token(m).Text)
+
+	p := New(src)
+	for p.More() {
+		if m := p.Mark(); p.Match(DIGITS) && p.Opt(p.Mark(), p.Match(".") && p.Match(DIGITS) && p.Match(".") && p.Match(DIGITS)) {
+			out = append(out, p.Token(m).Text)
 			continue
 		}
-		s.Next()
+		p.Next()
 	}
 
-	fmt.Println(s.Err, out)
-
-	// Output:
-	// <nil> [1966 1.10.32 1.10.33 1914]
-}
-
-// ExampleFind shows the usage of the Find parser to collect
-// either the section numbers or the years in the input text.
-func ExampleParser_find() {
-
-	src := `
-		The standard chunk of Lorem Ipsum used since 1966 is reproduced below
-		for those interested. Sections 1.10.32 and 1.10.33 from "de Finibus
-		Bonorum et Malorum" by Cicero are also reproduced in their exact
-		original form, accompanied by English versions from the 1914
-		translation by H. Rackham.
-	`
-
-	var out []string
-
-	dgts := M(DIGITS)
-	year := dgts
-	sect := And(dgts, M("."), dgts, M("."), dgts)
-	eith := Or(sect, year).On(Grabs(&out))
-	root := Find(eith).ZeroToMany()
-
-	err := root.Parse(src)
-
-	fmt.Println(err, out)
+	fmt.Println(p.Err, out)
 
 	// Output:
 	// <nil> [1966 1.10.32 1.10.33 1914]

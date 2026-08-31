@@ -51,11 +51,11 @@ func ExampleLang() {
 }
 
 type LangParserLow struct {
-	Scanner
+	Parser
 }
 
 func (p *LangParserLow) Parse(src string, out *Lang) error {
-	p.Scanner = New(src)
+	p.Parser = New(src)
 	p.Program(out)
 	return p.Err
 }
@@ -63,7 +63,7 @@ func (p *LangParserLow) Parse(src string, out *Lang) error {
 func (p *LangParserLow) Program(out *Lang) bool {
 	for p.Optional(WS) {
 		if v := (LangFunctionDef{}); p.FunctionDef(&v) {
-			out.F = append(out.F, v)
+			out.D = append(out.D, v)
 			continue
 		}
 		if v := (LangAssignment{}); p.Assignment(&v) {
@@ -103,7 +103,7 @@ func (p *LangParserLow) Statement(out *LangStatement) bool {
 		return true
 	}
 	if v := (LangFunctionCall{}); p.FunctionCall(&v) {
-		out.F = &v
+		out.C = &v
 		return true
 	}
 	return false
@@ -126,7 +126,7 @@ func (p *LangParserLow) Assignment(out *LangAssignment) bool {
 }
 
 type Lang struct {
-	F []LangFunctionDef
+	D []LangFunctionDef
 	A []LangAssignment
 }
 
@@ -136,7 +136,7 @@ type LangFunctionDef struct {
 }
 
 type LangStatement struct {
-	F *LangFunctionCall
+	C *LangFunctionCall
 	D *LangFunctionDef
 }
 
@@ -152,7 +152,7 @@ type LangAssignment struct {
 func LangPrint(v any, depth int) {
 	switch v := v.(type) {
 	case Lang:
-		for _, f := range v.F {
+		for _, f := range v.D {
 			LangPrint(f, depth)
 		}
 		for _, a := range v.A {
@@ -167,8 +167,8 @@ func LangPrint(v any, depth int) {
 	case LangAssignment:
 		LangPrint(fmt.Sprintf("Assignment: %s = %s", v.Name.Text, v.Value.Text), depth)
 	case LangStatement:
-		if v.F != nil {
-			LangPrint(*v.F, depth)
+		if v.C != nil {
+			LangPrint(*v.C, depth)
 		}
 		if v.D != nil {
 			LangPrint(*v.D, depth)

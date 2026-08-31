@@ -1,197 +1,238 @@
 package nom
 
-func Grab(out *string) Outer {
-	return func(t Token) {
-		*out = t.Text
-	}
+import (
+	"fmt"
+	"regexp"
+	"strings"
+	"unicode/utf8"
+)
+
+func New(src string) Parser {
+	return Parser{src: src, Row: 1, Col: 1}
 }
 
-func Grabs(out *[]string) Outer {
-	return func(t Token) {
-		*out = append(*out, t.Text)
-	}
+func (p *Parser) MatchOut[T MatchType](v T, out *Token) bool {
+	return p.Out(p.Mark(), p.Match(v), out)
 }
 
-// M matches the input against the given value.
-func M[T MatchType](v T) Parser {
-	return func(c *Context) bool {
-		return c.s.Match(v)
-	}
+func (p *Parser) ExpectOut[T MatchType](v T, out *Token) bool {
+	return p.Out(p.Mark(), p.Expect(v), out)
 }
 
-// T tests if the input equals the given value.
-func T[T MatchType](v T) Parser {
-	return func(c *Context) bool {
-		return c.s.Equal(v)
+func (p *Parser) Out(m Parser, cond bool, out *Token) bool {
+	if cond {
+		*out = p.Token(m)
 	}
+	return cond
 }
 
-// O makes a parser optional.
-func O[T MatchType](v T) Parser {
-	return func(c *Context) bool {
-		return c.s.Match(v) || true
-	}
+func (p *Parser) Opt(m Parser, cond bool) bool {
+	return p.Undo(m, cond) || true
 }
 
-// E expects the input to match the given value.
-func E[T MatchType](v T) Parser {
-	return func(c *Context) bool {
-		return c.s.Expect(v)
+// Undo sends the parser back to the mark m if cond is false.
+func (p *Parser) Undo(m Parser, cond bool) bool {
+	if !cond {
+		p.Back(m)
 	}
+	return cond
 }
 
-// P is a pointer to a parser, useful for recursive calls.
-func P(m *Parser) Parser {
-	return func(c *Context) bool {
-		return (*m)(c)
-	}
+func (p *Parser) Optional[T MatchType](v T) bool {
+	return p.Match(v) || true
 }
 
-// Any matches any single token from the input.
-func Any() Parser {
-	return func(c *Context) bool {
-		return c.s.Next()
-	}
+func (p *Parser) Expect[T MatchType](v T) bool {
+	return p.Match(v) || p.expect(v)
 }
 
-func Find(f Parser) Parser {
-	return func(c *Context) bool {
-		for c.s.More() && !f(c) && c.s.Next() {
-		}
-		return c.s.More()
-	}
+func (p *Parser) Expected(msg string) bool {
+	return p.expect(msg)
 }
 
-// And matches all of the given parsers in sequence.
-func And(and ...Parser) Parser {
-	return func(c *Context) bool {
-		m := c.s.Mark()
-		for _, fn := range and {
-			if !fn(c) {
-				m.Err = c.s.Err
-				c.s.Back(m)
-				return false
-			}
-		}
-		return true
-	}
+func (p *Parser) ExpectWith[T MatchType](v T, msg string) bool {
+	return p.Match(v) || p.expect(msg)
 }
 
-// Or matches one of the given parsers.
-func Or(or ...Parser) Parser {
-	return func(c *Context) bool {
-		for _, fn := range or {
-			if fn(c) {
-				return true
-			}
-		}
+func (p *Parser) expect[T MatchType](v T) bool {
+	if p.Err != nil {
+		return false
+	}
+	switch v := any(v).(type) {
+	case string:
+		p.Err = &Error{Parser: *p, Msg: v}
+	case *regexp.Regexp:
+		p.Err = &Error{Parser: *p, Msg: v.String()}
+	default:
+		p.Err = &Error{Parser: *p, Msg: "token"}
+	}
+	return false
+}
+
+func (p *Parser) Match[T MatchType](v T) bool {
+	switch v := any(v).(type) {
+	case string:
+		return p.MatchString(v)
+	case *regexp.Regexp:
+		return p.MatchRegex(v)
+	case func(rune) bool:
+		return p.MatchFunc(v)
+	default:
 		return false
 	}
 }
 
-// EOF tests for the end of the input.
-func EOF() Parser {
-	return func(c *Context) bool {
-		return !c.s.More()
-	}
+func (p *Parser) MatchString(v string) bool {
+	return p.EqualString(v) && p.advance(v)
 }
 
-// Parser is the entry point for parsing an input.
-func (f Parser) Parse(src string) error {
-	c := &Context{s: New(src)}
-	f(c)
-	return c.s.Err
+func (p *Parser) MatchRegex(v *regexp.Regexp) bool {
+	return p.advance(v.FindString(p.Tail()))
 }
 
-// Out outputs the matched token.
-func (f Parser) Out(out *Token) Parser {
-	return f.On(func(tk Token) {
-		*out = tk
-	})
+func (p *Parser) MatchFunc(f func(rune) bool) bool {
+	r := p.Curr()
+	return f(r) && p.advance(string(r))
 }
 
-// Set assigns v to out, then resets v to its zero value.
-func (f Parser) Set[T any](v *T, out **T) Parser {
-	return f.On(func(Token) {
-		var zero T
-		*out = new(*v)
-		*v = zero
-	})
-}
-
-// Add appends v to out, then resets v to its zero value.
-func (f Parser) Add[T any](v *T, out *[]T) Parser {
-	return f.On(func(Token) {
-		var zero T
-		*out = append(*out, *v)
-		*v = zero
-	})
-}
-
-// On executes the given function when a parser successfully matches.
-func (f Parser) On(fn Outer) Parser {
-	return func(c *Context) bool {
-		if m := c.s.Mark(); f(c) {
-			fn(c.s.Token(m))
-			return true
-		}
+func (p *Parser) Equal[T MatchType](v T) bool {
+	switch v := any(v).(type) {
+	case string:
+		return p.EqualString(v)
+	case *regexp.Regexp:
+		return p.EqualRegex(v)
+	case func(rune) bool:
+		return p.EqualFunc(v)
+	default:
 		return false
 	}
 }
 
-// ZeroToMany applies a parser zero or more times.
-func (f Parser) ZeroToMany() Parser {
-	return func(c *Context) bool {
-		v := 0
-		for f(c) {
-			v++
+func (p *Parser) EqualString(v string) bool {
+	return strings.HasPrefix(p.Tail(), v)
+}
+
+func (p *Parser) EqualRegex(v *regexp.Regexp) bool {
+	return v.MatchString(p.Tail())
+}
+
+func (p *Parser) EqualFunc(f func(rune) bool) bool {
+	return f(p.Curr())
+}
+
+func (p *Parser) Any() bool {
+	return p.Next()
+}
+
+func (p *Parser) Next() bool {
+	return p.advance(string(p.Curr()))
+}
+
+func (p *Parser) Curr() rune {
+	r, _ := utf8.DecodeRuneInString(p.Tail())
+	return r
+}
+
+func (p *Parser) Head() string {
+	return p.src[:p.Idx]
+}
+
+func (p *Parser) Tail() string {
+	return p.src[p.Idx:]
+}
+
+func (p *Parser) Body() string {
+	return p.src
+}
+
+func (p *Parser) advance(v string) bool {
+	p.Idx += len(v)
+	p.coln(v)
+	return len(v) > 0
+}
+
+func (p *Parser) coln(v string) {
+	for _, r := range v {
+		p.Col++
+		if r == '\n' {
+			p.Row++
+			p.Col = 1
 		}
-		return v >= 0 && c.s.Err == nil
 	}
 }
 
-// OneToMany applies a parser one or more times.
-func (f Parser) OneToMany() Parser {
-	return func(c *Context) bool {
-		v := 0
-		for f(c) {
-			v++
-		}
-		return v >= 1
+func (p Parser) Mark() Parser {
+	return p
+}
+
+func (p *Parser) Back(m Parser) {
+	*p = m
+}
+
+func (p *Parser) Token(m Parser) Token {
+	return Token{Text: p.src[m.Idx:p.Idx], Idx: m.Idx, Row: m.Row, Col: m.Col}
+}
+
+func (p Parser) More() bool {
+	return len(p.Tail()) > 0
+}
+
+type Parser struct {
+	src string
+	Idx int
+	Row int
+	Col int
+	Err error
+}
+
+type Token struct {
+	Text string
+	Idx  int
+	Row  int
+	Col  int
+}
+
+type MatchType interface {
+	int | string | *regexp.Regexp | func(rune) bool
+}
+
+// Error represents a parsing error.
+type Error struct {
+	Parser
+	Msg string
+}
+
+func (e *Error) Error() string {
+	line := e.getErrorLine()
+	tabs := strings.Count(line, "\t") * 3
+	line = strings.ReplaceAll(line, "\t", "    ")
+	a := fmt.Sprintf("failed to parse: line %d char %d: expected %s", e.Row, e.Col, e.Msg)
+	aa := fmt.Sprintf("%5s |", "")
+	ab := fmt.Sprintf("%5d | %s", e.Row, line)
+	ac := fmt.Sprintf("%5s |%s%s", "", strings.Repeat(" ", e.Col+tabs), "^--")
+	return fmt.Sprintf("%s\n%s\n%s\n%s", a, aa, ab, ac)
+}
+
+func (e *Error) getErrorLine() string {
+	ini := strings.LastIndex(e.Head(), "\n")
+	if ini == -1 {
+		ini = 0
+	} else {
+		ini += 1 // Exclude the \n.
 	}
-}
-
-// True makes a parser always succeed.
-func (f Parser) True() Parser {
-	return func(c *Context) bool {
-		return f(c) || true
+	end := strings.Index(e.Tail(), "\n")
+	switch end {
+	case -1: // No newline found after the error position.
+		end = len(e.Body())
+	case 0: // Newline immediately after the error position.
+		end = len(e.Head())
+	default:
+		end = len(e.Head()) + end
 	}
+	return e.Body()[ini:end]
 }
 
-// False makes a parser always fail.
-func (f Parser) False() Parser {
-	return func(c *Context) bool {
-		return f(c) && false
-	}
-}
-
-// Expect makes a parser triggers an error
-// with the expected message on failure.
-//
-//	M(DIGITS).Expect("number").Parse("hello")
-func (f Parser) Expect(expected string) Parser {
-	return func(c *Context) bool {
-		return f(c) || c.s.expect(expected)
-	}
-}
-
-// Parser is a parsing function that operates on a context
-// and returns a boolean indicating success.
-type Parser func(*Context) bool
-
-type Outer func(Token)
-
-// Context holds the current state of a parser.
-type Context struct {
-	s Scanner
-}
+var WORD = regexp.MustCompile(`^\w+`)
+var DIGITS = regexp.MustCompile(`^\d+`)
+var ST = regexp.MustCompile(`^[ \t]+`)
+var WS = regexp.MustCompile(`^\s+`)
