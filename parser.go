@@ -11,12 +11,12 @@ func New(src string) Parser {
 	return Parser{src: src, Row: 1, Col: 1}
 }
 
-func (p *Parser) MatchOut[T MatchType](v T, out *Token) bool {
-	return p.Out(p.Mark(), p.Match(v), out)
+func (p *Parser) MatchOut[P Pattern](pattern P, out *Token) bool {
+	return p.Out(p.Mark(), p.Match(pattern), out)
 }
 
-func (p *Parser) ExpectOut[T MatchType](v T, out *Token) bool {
-	return p.Out(p.Mark(), p.Expect(v), out)
+func (p *Parser) ExpectOut[P Pattern](pattern P, out *Token) bool {
+	return p.Out(p.Mark(), p.Expect(pattern), out)
 }
 
 func (p *Parser) Out(m Parser, cond bool, out *Token) bool {
@@ -38,45 +38,45 @@ func (p *Parser) Undo(m Parser, cond bool) bool {
 	return cond
 }
 
-func (p *Parser) Optional[T MatchType](v T) bool {
-	return p.Match(v) || true
+func (p *Parser) Optional[P Pattern](pattern P) bool {
+	return p.Match(pattern) || true
 }
 
-func (p *Parser) Expect[T MatchType](v T) bool {
-	return p.Match(v) || p.expect(v)
+func (p *Parser) Expect[P Pattern](pattern P) bool {
+	return p.Match(pattern) || p.expect(pattern)
 }
 
 func (p *Parser) Expected(msg string) bool {
 	return p.expect(msg)
 }
 
-func (p *Parser) ExpectWith[T MatchType](v T, msg string) bool {
-	return p.Match(v) || p.expect(msg)
+func (p *Parser) ExpectWith[P Pattern](pattern P, msg string) bool {
+	return p.Match(pattern) || p.expect(msg)
 }
 
-func (p *Parser) expect[T MatchType](v T) bool {
+func (p *Parser) expect[P Pattern](pattern P) bool {
 	if p.Err != nil {
 		return false
 	}
-	switch v := any(v).(type) {
+	switch pattern := any(pattern).(type) {
 	case string:
-		p.Err = &Error{Parser: *p, Msg: v}
+		p.Err = &Error{Parser: *p, Msg: pattern}
 	case *regexp.Regexp:
-		p.Err = &Error{Parser: *p, Msg: v.String()}
+		p.Err = &Error{Parser: *p, Msg: pattern.String()}
 	default:
 		p.Err = &Error{Parser: *p, Msg: "token"}
 	}
 	return false
 }
 
-func (p *Parser) Match[T MatchType](v T) bool {
-	switch v := any(v).(type) {
+func (p *Parser) Match[P Pattern](pattern P) bool {
+	switch pattern := any(pattern).(type) {
 	case string:
-		return p.MatchString(v)
+		return p.MatchString(pattern)
 	case *regexp.Regexp:
-		return p.MatchRegex(v)
+		return p.MatchRegex(pattern)
 	case func(rune) bool:
-		return p.MatchFunc(v)
+		return p.MatchFunc(pattern)
 	default:
 		return false
 	}
@@ -95,14 +95,14 @@ func (p *Parser) MatchFunc(f func(rune) bool) bool {
 	return f(r) && p.advance(string(r))
 }
 
-func (p *Parser) Equal[T MatchType](v T) bool {
-	switch v := any(v).(type) {
+func (p *Parser) Equal[P Pattern](pattern P) bool {
+	switch pattern := any(pattern).(type) {
 	case string:
-		return p.EqualString(v)
+		return p.EqualString(pattern)
 	case *regexp.Regexp:
-		return p.EqualRegex(v)
+		return p.EqualRegex(pattern)
 	case func(rune) bool:
-		return p.EqualFunc(v)
+		return p.EqualFunc(pattern)
 	default:
 		return false
 	}
@@ -192,8 +192,8 @@ type Token struct {
 	Col  int
 }
 
-type MatchType interface {
-	int | string | *regexp.Regexp | func(rune) bool
+type Pattern interface {
+	string | *regexp.Regexp | func(rune) bool
 }
 
 // Error represents a parsing error.

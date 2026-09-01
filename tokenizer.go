@@ -25,9 +25,9 @@ func Tokenize[K any](src string, match ...Tokenizer[K]) iter.Seq2[K, Token] {
 }
 
 // T matches and identifies a token.
-func T[MT MatchType, Kind any](kind Kind, v MT) Tokenizer[Kind] {
+func T[Kind any, P Pattern](kind Kind, pattern P) Tokenizer[Kind] {
 	return func(s *Parser) (Kind, bool) {
-		return kind, s.Match(v)
+		return kind, s.Match(pattern)
 	}
 }
 
