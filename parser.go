@@ -55,34 +55,30 @@ func (p *Parser) Optional[P Pattern](pattern P) bool {
 }
 
 // Expect expects the given pattern and triggers
-// an expectation error if it does not match.
+// an expectation error if it fails.
 func (p *Parser) Expect[P Pattern](pattern P) bool {
-	return p.Match(pattern) || p.expect(pattern)
-}
-
-// Expected triggers an expectation error with the given message.
-func (p *Parser) Expected(msg string) bool {
-	return p.expect(msg)
-}
-
-// ExpectWith matches the given pattern and triggers an
-// expectation error with the given message if it fails.
-func (p *Parser) ExpectWith[P Pattern](pattern P, msg string) bool {
-	return p.Match(pattern) || p.expect(msg)
-}
-
-// expect triggers an expectation error for the given pattern.
-func (p *Parser) expect[P Pattern](pattern P) bool {
-	if p.Err != nil {
-		return false
-	}
 	switch pattern := any(pattern).(type) {
 	case string:
-		p.Err = &Error{Parser: *p, Msg: pattern}
+		return p.MatchString(pattern) || p.Expected(pattern)
 	case *regexp.Regexp:
-		p.Err = &Error{Parser: *p, Msg: pattern.String()}
+		return p.MatchRegex(pattern) || p.Expected(pattern.String())
+	case func(rune) bool:
+		return p.MatchFunc(pattern) || p.Expected("token")
 	default:
-		p.Err = &Error{Parser: *p, Msg: "token"}
+		return false
+	}
+}
+
+// Expects expects the given pattern and triggers an expectation
+// error with the given message if it fails.
+func (p *Parser) Expects[P Pattern](pattern P, msg string) bool {
+	return p.Match(pattern) || p.Expected(msg)
+}
+
+// Expected triggers an expectation error for the given pattern.
+func (p *Parser) Expected(msg string) bool {
+	if p.Err == nil {
+		p.Err = &Error{Parser: *p, Msg: msg}
 	}
 	return false
 }

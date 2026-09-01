@@ -19,7 +19,7 @@ func ExampleParser_Expect() {
 	fmt.Println(p.Err)
 
 	p = New("fun()")
-	ok = p.Expect("fun") && p.ExpectWith("{", "open brackets") && p.Expect("}")
+	ok = p.Expect("fun") && p.Expects("{", "open brackets") && p.Expect("}")
 	fmt.Println("--- custom expected error ---")
 	fmt.Println(ok)
 	fmt.Println(p.Err)
