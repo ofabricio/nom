@@ -7,7 +7,7 @@ import (
 	. "github.com/ofabricio/nom"
 )
 
-// ExampleExpr shows parsing and evaluating a mathematical expression.
+// ExampleExpr shows how to parse and evaluate a mathematical expression.
 func ExampleExpr() {
 
 	src := "1+2*(3+4)*5"

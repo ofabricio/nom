@@ -7,7 +7,7 @@ import (
 	. "github.com/ofabricio/nom"
 )
 
-// ExampleTokenize shows how to split a string into individual tokens.
+// ExampleTokenize shows how to tokenize a string into individual tokens.
 func ExampleTokenize() {
 
 	src := `

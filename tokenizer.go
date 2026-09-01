@@ -4,7 +4,7 @@ import (
 	"iter"
 )
 
-// Tokenize splits the input string into tokens based on the provided tokenizers.
+// Tokenize tokenizes the input string based on the provided tokenizers.
 func Tokenize[K any](src string, match ...Tokenizer[K]) iter.Seq2[K, Token] {
 	return func(yield func(K, Token) bool) {
 		p := New(src)
