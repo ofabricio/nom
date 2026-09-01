@@ -260,19 +260,11 @@ func (e *Error) Error() string {
 }
 
 func (e *Error) getErrorLine() string {
-	ini := strings.LastIndex(e.Head(), "\n")
-	if ini == -1 {
-		ini = 0
-	} else {
-		ini += 1 // Exclude the \n.
-	}
+	ini := strings.LastIndex(e.Head(), "\n") + 1
 	end := strings.Index(e.Tail(), "\n")
-	switch end {
-	case -1: // No newline found after the error position.
+	if end == -1 {
 		end = len(e.Body())
-	case 0: // Newline immediately after the error position.
-		end = len(e.Head())
-	default:
+	} else {
 		end = len(e.Head()) + end
 	}
 	return e.Body()[ini:end]

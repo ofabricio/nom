@@ -2,67 +2,113 @@ package nom
 
 import (
 	"fmt"
+	"strings"
+	"testing"
 	"unicode"
 )
 
-func ExampleParser_Expect() {
+func TestParserExpectedErrorMsg(t *testing.T) {
 
-	p := New("fun{}")
-	ok := p.Expect("fun") && p.Expect("{") && p.Expect("}")
-	fmt.Println("--- no expected error ---")
-	fmt.Println(ok, p.Err)
+	tt := []struct {
+		Descr  string
+		GiveI  string // Input
+		GiveM  string // Match
+		GiveE  string // Expect
+		Then   []string
+		ThenOk bool
+	}{
+		{
+			Descr:  "just one line",
+			GiveI:  "111",
+			GiveM:  "11",
+			GiveE:  "x",
+			ThenOk: false,
+			Then: []string{
+				"failed to parse: line 1 char 3: expected x",
+				"      |",
+				"    1 | 111",
+				"      |   ^--",
+			},
+		},
+		{
+			Descr:  "first line on the end edge",
+			GiveI:  "111\n",
+			GiveM:  "111",
+			GiveE:  "x",
+			ThenOk: false,
+			Then: []string{
+				"failed to parse: line 1 char 4: expected x",
+				"      |",
+				"    1 | 111",
+				"      |    ^--",
+			},
+		},
+		{
+			Descr:  "second line with start edge",
+			GiveI:  "\n2222",
+			GiveM:  "\n22",
+			GiveE:  "x",
+			ThenOk: false,
+			Then: []string{
+				"failed to parse: line 2 char 3: expected x",
+				"      |",
+				"    2 | 2222",
+				"      |   ^--",
+			},
+		},
+		{
+			Descr:  "second line of three",
+			GiveI:  "111\n2222\n33",
+			GiveM:  "111\n22",
+			GiveE:  "x",
+			ThenOk: false,
+			Then: []string{
+				"failed to parse: line 2 char 3: expected x",
+				"      |",
+				"    2 | 2222",
+				"      |   ^--",
+			},
+		},
+		{
+			Descr:  "three empty lines",
+			GiveI:  "\n\n\n",
+			GiveM:  "\n",
+			GiveE:  "x",
+			ThenOk: false,
+			Then: []string{
+				"failed to parse: line 2 char 1: expected x",
+				"      |",
+				"    2 | ",
+				"      | ^--",
+			},
+		},
+		{
+			Descr:  "should format \t accordingly",
+			GiveI:  "\n\t\t2222\n",
+			GiveM:  "\n\t\t22",
+			GiveE:  "x",
+			ThenOk: false,
+			Then: []string{
+				"failed to parse: line 2 char 5: expected x",
+				"      |",
+				"    2 |         2222",
+				"      |           ^--",
+			},
+		},
+	}
 
-	p = New("fun()")
-	ok = p.Expect("fun") && p.Expect("{") && p.Expect("}")
-	fmt.Println("--- default expected error ---")
-	fmt.Println(ok)
-	fmt.Println(p.Err)
-
-	p = New("fun()")
-	ok = p.Expect("fun") && p.Expects("{", "open brackets") && p.Expect("}")
-	fmt.Println("--- custom expected error ---")
-	fmt.Println(ok)
-	fmt.Println(p.Err)
-
-	p = New("arg(abc)")
-	ok = p.Expect("arg") && p.Expect("(") && p.Expect(DIGITS) && p.Expect(")")
-	fmt.Println("--- arg example ---")
-	fmt.Println(ok)
-	fmt.Println(p.Err)
-
-	p = New("\n\t\tfunc\n")
-	ok = p.Match(WS) && p.Match("func") && p.Expect(ST)
-	fmt.Println("--- fun example ---")
-	fmt.Println(ok)
-	fmt.Println(p.Err)
-
-	// Output:
-	// --- no expected error ---
-	// true <nil>
-	// --- default expected error ---
-	// false
-	// failed to parse: line 1 char 4: expected {
-	//       |
-	//     1 | fun()
-	//       |    ^--
-	// --- custom expected error ---
-	// false
-	// failed to parse: line 1 char 4: expected open brackets
-	//       |
-	//     1 | fun()
-	//       |    ^--
-	// --- arg example ---
-	// false
-	// failed to parse: line 1 char 5: expected ^\d+
-	//       |
-	//     1 | arg(abc)
-	//       |     ^--
-	// --- fun example ---
-	// false
-	// failed to parse: line 2 char 7: expected ^[ \t]+
-	//       |
-	//     2 |         func
-	//       |             ^--
+	for _, tc := range tt {
+		p := New(tc.GiveI)
+		ok := p.Match(tc.GiveM) && p.Expect(tc.GiveE)
+		if ok != tc.ThenOk {
+			t.Errorf("\nMsg: %s\nGot:\n%v\nExp:\n%v\n", tc.Descr, ok, tc.ThenOk)
+		}
+		exp := strings.Join(tc.Then, "\n")
+		got := fmt.Sprint(p.Err)
+		if got != exp {
+			t.Errorf("\nMsg: %s\nGot:\n%v\nExp:\n%v\n", tc.Descr, got, exp)
+		}
+	}
 }
 
 func ExampleParser_MatchFunc() {
