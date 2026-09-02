@@ -65,39 +65,27 @@ This parser works by matching a pattern against the current position and advanci
 
 There are a few functions to help handling the parsing.
 
-**Matchers:** functions that advance the parser as they match.
-
-- Match
-- Expect
-- Optional
-- Any
-
-**Testers:** functions that test for a pattern without advancing the parser.
-
-- Equal
-- More
-
-**Capturers:** functions that capture tokens on a match.
-
-- MatchOut
-- ExpectOut
-- Out
-- Mark, Token
-- Curr
-
-**Movement:** functions that move the parser back and forth.
-
-- Mark, Back
-- Next
-
-**Other:** other functions.
-
-- Head
-- Tail
-- Body
-
-**Utils:** utility functions.
-
-- Undo
-- Opt
-- Tokenize, T
+| Function | Description |
+| :---     | :---        |
+| Match | Matches and advances the parser on success. |
+| MatchOut | Same as `Match`, but outputs the matching token on success. |
+| Expect | Matches and advances the parser on success, but triggers an expectation error on failure. |
+| ExpectOut | Same as `Expect`, but outputs the matching token on success. |
+| Optional | Matches and advances the parser on success, but returns true on failure. |
+| Any | Matches any character and advances the parser on success. |
+| Equal | Tests a pattern without advancing the parser on success. |
+| More | Tells if there are more characters to parse. |
+| Find | Advances through the input until it finds a pattern. |
+| FindOut | Same as `Find`, but outputs the matching token on success. |
+| Out | Outputs a token on success. |
+| Mark | Sets a mark at the current position. |
+| Back | Sends the parser back to a mark. |
+| Token | Returns the token between two marks. |
+| Curr | Returns the current character. |
+| Next | Advances the parser by one character. |
+| Head | Returns the portion of the input before the current position. |
+| Tail | Returns the portion of the input from the current position onwards. |
+| Body | Returns the entire input. |
+| Undo | Moves the parser back to a mark. |
+| Tokenize | Tokenizes the input based on the provided tokenizers `T` |
+| T | A tokenizer used in `Tokenize` |

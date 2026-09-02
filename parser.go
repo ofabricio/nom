@@ -34,7 +34,7 @@ func (p *Parser) Out(m Parser, cond bool, out *Token) bool {
 	return cond
 }
 
-// Opt makes cond optional. Ther mark m moves the
+// Opt makes cond optional. The mark m moves the
 // parser back to it on failure.
 func (p *Parser) Opt(m Parser, cond bool) bool {
 	return p.Undo(m, cond) || true
