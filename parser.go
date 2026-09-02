@@ -49,6 +49,22 @@ func (p *Parser) Undo(m Parser, cond bool) bool {
 	return cond
 }
 
+// FindOut is like Find, but outputs the matching token if found.
+func (p *Parser) FindOut[P Pattern](pattern P, out *Token) bool {
+	return p.Find(pattern) && p.MatchOut(pattern, out)
+}
+
+// Find advances through the input until it finds a pattern.
+// Returns true if found, and the parser is at the start of
+// the pattern. The parser hits the end of the input if not
+// found.
+func (p *Parser) Find[P Pattern](pattern P) bool {
+	for p.More() && !p.Equal(pattern) {
+		p.Next()
+	}
+	return p.More()
+}
+
 // Optional optionally parses the given pattern.
 func (p *Parser) Optional[P Pattern](pattern P) bool {
 	return p.Match(pattern) || true

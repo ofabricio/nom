@@ -2,10 +2,49 @@ package nom
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 	"unicode"
 )
+
+func ExampleParser_Find() {
+
+	p := New(`Coffee is $5, but he sold for $4.`)
+
+	money := regexp.MustCompile(`^\$\d+`)
+
+	var out Token
+	for p.Find(money) && p.MatchOut(money, &out) {
+		fmt.Println(out.Text)
+	}
+
+	fmt.Println(p.Err)
+
+	// Output:
+	// $5
+	// $4
+	// <nil>
+}
+
+func ExampleParser_FindOut() {
+
+	p := New(`Coffee is $5, but he sold for $4.`)
+
+	money := regexp.MustCompile(`^\$\d+`)
+
+	var out Token
+	for p.FindOut(money, &out) {
+		fmt.Println(out.Text)
+	}
+
+	fmt.Println(p.Err)
+
+	// Output:
+	// $5
+	// $4
+	// <nil>
+}
 
 func TestParserExpectedErrorMsg(t *testing.T) {
 
