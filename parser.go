@@ -233,7 +233,7 @@ func (p *Parser) Token(m Parser) Token {
 
 // More checks if there are more characters to parse.
 func (p Parser) More() bool {
-	return len(p.Tail()) > 0
+	return p.Idx < len(p.src)
 }
 
 // Parser represents a parser.
