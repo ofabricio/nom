@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"unicode/utf8"
 )
 
 // New creates a new parser for the given source string.
@@ -129,7 +128,7 @@ func (p *Parser) MatchRegex(v *regexp.Regexp) bool {
 // MatchFunc matches the given rune function and advances the
 // parser on success. Returns true if it matches.
 func (p *Parser) MatchFunc(f func(rune) bool) bool {
-	r := p.Curr()
+	r := p.Rune()
 	return f(r) && p.advance(string(r))
 }
 
@@ -163,7 +162,7 @@ func (p *Parser) EqualRegex(v *regexp.Regexp) bool {
 // EqualFunc checks if the given rune function matches
 // the current parser position without advancing.
 func (p *Parser) EqualFunc(f func(rune) bool) bool {
-	return f(p.Curr())
+	return f(p.Rune())
 }
 
 // Any matches any characters.
@@ -173,13 +172,23 @@ func (p *Parser) Any() bool {
 
 // Next advances the parser by one character.
 func (p *Parser) Next() bool {
-	return p.advance(string(p.Curr()))
+	return p.advance(p.Char())
 }
 
-// Curr returns the current character.
-func (p *Parser) Curr() rune {
-	r, _ := utf8.DecodeRuneInString(p.Tail())
-	return r
+// Rune returns the current character as a rune.
+func (p *Parser) Rune() rune {
+	for _, v := range p.Tail() {
+		return v
+	}
+	return 0
+}
+
+// Char returns the current character as a string.
+func (p *Parser) Char() string {
+	for _, v := range p.Tail() {
+		return string(v)
+	}
+	return ""
 }
 
 // Head returns the portion of the source

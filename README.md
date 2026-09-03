@@ -81,7 +81,8 @@ There are a few functions to help handling the parsing.
 | Mark | Sets a mark at the current position. |
 | Back | Sends the parser back to a mark. |
 | Token | Returns the token between two marks. |
-| Curr | Returns the current character. |
+| Rune | Returns the current character as a rune. |
+| Char | Returns the current character as a string. |
 | Next | Advances the parser by one character. |
 | Head | Returns the portion of the input before the current position. |
 | Tail | Returns the portion of the input from the current position onwards. |

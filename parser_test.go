@@ -139,14 +139,10 @@ func TestParserExpectedErrorMsg(t *testing.T) {
 	for _, tc := range tt {
 		p := New(tc.GiveI)
 		ok := p.Match(tc.GiveM) && p.Expect(tc.GiveE)
-		if ok != tc.ThenOk {
-			t.Errorf("\nMsg: %s\nGot:\n%v\nExp:\n%v\n", tc.Descr, ok, tc.ThenOk)
-		}
+		assert(t, ok == tc.ThenOk, fmt.Sprint(ok), fmt.Sprint(tc.ThenOk), tc.Descr)
 		exp := strings.Join(tc.Then, "\n")
 		got := fmt.Sprint(p.Err)
-		if got != exp {
-			t.Errorf("\nMsg: %s\nGot:\n%v\nExp:\n%v\n", tc.Descr, got, exp)
-		}
+		assert(t, got == exp, got, exp, tc.Descr)
 	}
 }
 
@@ -159,4 +155,46 @@ func ExampleParser_MatchFunc() {
 	// Output:
 	// true true
 	// false true
+}
+
+func ExampleParser_Rune() {
+
+	p := New("d😊b")
+	fmt.Println(p.Rune() == 'd')
+	p.Next()
+	fmt.Println(p.Rune() == '😊')
+	p.Next()
+	fmt.Println(p.Rune() == 'b')
+	p.Next()
+	fmt.Println(p.Rune() == 0)
+
+	// Output:
+	// true
+	// true
+	// true
+	// true
+}
+
+func ExampleParser_Char() {
+
+	p := New("d😊b")
+	fmt.Println(p.Char() == "d")
+	p.Next()
+	fmt.Println(p.Char() == "😊")
+	p.Next()
+	fmt.Println(p.Char() == "b")
+	p.Next()
+	fmt.Println(p.Char() == "")
+
+	// Output:
+	// true
+	// true
+	// true
+	// true
+}
+
+func assert(t *testing.T, cond bool, got, exp string, msg string) {
+	if !cond {
+		t.Errorf("\nMsg: %s\nGot:\n%v\nExp:\n%v\n", msg, got, exp)
+	}
 }
