@@ -8,6 +8,35 @@ import (
 	"unicode"
 )
 
+func ExampleParser_MatchLine() {
+
+	p := New("\naa\nb\n\n")
+
+	var t Token
+	for p.Out(p.Mark(), p.Line(), &t) && p.Match("\n") {
+		fmt.Printf("Idx=%1d Row=%1d Col=%1d Text='%s'\n", t.Idx, t.Row, t.Col, t.Text)
+	}
+
+	fmt.Println("---")
+	p = New("\naa\nb\n\n")
+
+	for ; p.Line(); p.Match("\n") {
+		t := p.GetLine()
+		fmt.Printf("Idx=%1d Row=%1d Col=%1d Text='%s'\n", t.Idx, t.Row, t.Col, t.Text)
+	}
+
+	// Output:
+	// Idx=0 Row=1 Col=1 Text=''
+	// Idx=1 Row=2 Col=1 Text='aa'
+	// Idx=4 Row=3 Col=1 Text='b'
+	// Idx=6 Row=4 Col=1 Text=''
+	// ---
+	// Idx=0 Row=1 Col=1 Text=''
+	// Idx=1 Row=2 Col=1 Text='aa'
+	// Idx=4 Row=3 Col=1 Text='b'
+	// Idx=6 Row=4 Col=1 Text=''
+}
+
 func ExampleParser_Find() {
 
 	p := New(`Coffee is $5, but he sold for $4.`)

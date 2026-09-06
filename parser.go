@@ -11,6 +11,24 @@ func New(src string) Parser {
 	return Parser{src: src, Row: 1, Col: 1}
 }
 
+// Line matches the rest of a line.
+func (p *Parser) Line() bool {
+	return p.Equal("\n") || p.Find("\n")
+}
+
+// GetLine returns the current line, even if the
+// parser is not in the beginning of the line.
+func (p *Parser) GetLine() Token {
+	ini := strings.LastIndex(p.Head(), "\n") + 1
+	end := strings.Index(p.Tail(), "\n")
+	if end == -1 {
+		end = len(p.Body())
+	} else {
+		end = len(p.Head()) + end
+	}
+	return Token{Text: p.src[ini:end], Idx: ini, Row: p.Row, Col: 1}
+}
+
 // MatchOut matches the given pattern and outputs
 // the corresponding token on success.
 func (p *Parser) MatchOut[P Pattern](pattern P, out *Token) bool {
@@ -274,25 +292,14 @@ type Error struct {
 }
 
 func (e *Error) Error() string {
-	line := e.getErrorLine()
+	line := e.GetLine().Text
 	tabs := strings.Count(line, "\t") * 3
 	line = strings.ReplaceAll(line, "\t", "    ")
 	a := fmt.Sprintf("failed to parse: line %d char %d: expected %s", e.Row, e.Col, e.Msg)
-	aa := fmt.Sprintf("%5s |", "")
-	ab := fmt.Sprintf("%5d | %s", e.Row, line)
-	ac := fmt.Sprintf("%5s |%s%s", "", strings.Repeat(" ", e.Col+tabs), "^--")
-	return fmt.Sprintf("%s\n%s\n%s\n%s", a, aa, ab, ac)
-}
-
-func (e *Error) getErrorLine() string {
-	ini := strings.LastIndex(e.Head(), "\n") + 1
-	end := strings.Index(e.Tail(), "\n")
-	if end == -1 {
-		end = len(e.Body())
-	} else {
-		end = len(e.Head()) + end
-	}
-	return e.Body()[ini:end]
+	b := fmt.Sprintf("%5s |", "")
+	c := fmt.Sprintf("%5d | %s", e.Row, line)
+	d := fmt.Sprintf("%5s |%s%s", "", strings.Repeat(" ", e.Col+tabs), "^--")
+	return fmt.Sprintf("%s\n%s\n%s\n%s", a, b, c, d)
 }
 
 var WORD = regexp.MustCompile(`^\w+`)
