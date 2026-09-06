@@ -318,5 +318,5 @@ func (e *Error) Error() string {
 
 var WORD = regexp.MustCompile(`^\w+`)
 var DIGITS = regexp.MustCompile(`^\d+`)
-var ST = regexp.MustCompile(`^[ \t]+`)
+var HS = regexp.MustCompile(`^[ \t]+`)
 var WS = regexp.MustCompile(`^\s+`)

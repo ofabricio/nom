@@ -77,12 +77,12 @@ func (p *LangParserLow) Program(out *Lang) bool {
 
 func (p *LangParserLow) FunctionDef(out *LangFunctionDef) bool {
 	return p.Match("fun") &&
-		p.Expect(ST) &&
+		p.Expect(HS) &&
 		p.ExpectOut(WORD, &out.Name) &&
-		p.Optional(ST) &&
+		p.Optional(HS) &&
 		p.Expect("(") &&
 		p.Expect(")") &&
-		p.Optional(ST) &&
+		p.Optional(HS) &&
 		p.Expect("{") &&
 		p.FunctionBody(&out.Body) &&
 		p.Expect("}")
@@ -117,11 +117,11 @@ func (p *LangParserLow) FunctionCall(out *LangFunctionCall) bool {
 
 func (p *LangParserLow) Assignment(out *LangAssignment) bool {
 	return p.Match("let") &&
-		p.Expect(ST) &&
+		p.Expect(HS) &&
 		p.ExpectOut(WORD, &out.Name) &&
-		p.Optional(ST) &&
+		p.Optional(HS) &&
 		p.Expect("=") &&
-		p.Optional(ST) &&
+		p.Optional(HS) &&
 		p.ExpectOut(DIGITS, &out.Value)
 }
 
