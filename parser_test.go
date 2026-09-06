@@ -8,7 +8,44 @@ import (
 	"unicode"
 )
 
-func ExampleParser_MatchLine() {
+func ExampleParser_String() {
+
+	p := New(`
+		''
+		'\''
+		'one'
+		'\'one\''
+		'one\'two\'three'
+		'\'one\'two\'three\''
+	`)
+
+	for p.Optional(WS) && p.More() {
+		if m := p.Mark(); p.String("'") {
+			fmt.Println(p.Token(m).Text)
+			continue
+		}
+		break
+	}
+
+	p = New(`"abc`)
+	fmt.Println("---")
+	fmt.Println(p.String("\""), p.Err)
+
+	// Output:
+	// ''
+	// '\''
+	// 'one'
+	// '\'one\''
+	// 'one\'two\'three'
+	// '\'one\'two\'three\''
+	// ---
+	// false failed to parse: line 1 char 5: expected "
+	//       |
+	//     1 | "abc
+	//       |     ^--
+}
+
+func ExampleParser_Line() {
 
 	p := New("\naa\nb\n\n")
 

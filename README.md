@@ -79,6 +79,7 @@ There are a few functions to help handling the parsing.
 | FindOut | Same as `Find`, but outputs the matching token on success. |
 | Line | Matches the rest of a line. |
 | GetLine | Returns the current line. |
+| String | Matches a string. |
 | Out | Outputs a token on success. |
 | Mark | Sets a mark at the current position. |
 | Back | Sends the parser back to a mark. |

@@ -11,6 +11,20 @@ func New(src string) Parser {
 	return Parser{src: src, Row: 1, Col: 1}
 }
 
+// String matches a string enclosed in the quote character.
+// It escapes the quote character with a backslash.
+func (p *Parser) String(quote string) bool {
+	if p.Match(quote) {
+		for p.More() && !p.Equal(quote) {
+			if !(p.Match("\\") && p.Match(quote)) {
+				p.Next()
+			}
+		}
+		return p.Expect(quote)
+	}
+	return false
+}
+
 // Line matches the rest of a line.
 func (p *Parser) Line() bool {
 	return p.Equal("\n") || p.Find("\n")
