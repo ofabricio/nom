@@ -25,11 +25,6 @@ func (p *Parser) String(quote string) bool {
 	return false
 }
 
-// Line matches the rest of a line.
-func (p *Parser) Line() bool {
-	return p.Equal("\n") || p.Find("\n")
-}
-
 // GetLine returns the current line, even if the
 // parser is not in the beginning of the line.
 func (p *Parser) GetLine() Token {

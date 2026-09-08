@@ -45,19 +45,19 @@ func ExampleParser_String() {
 	//       |     ^--
 }
 
-func ExampleParser_Line() {
+func ExampleParser_GetLine() {
 
 	p := New("\naa\nb\n\n")
 
 	var t Token
-	for p.Out(p.Mark(), p.Line(), &t) && p.Match("\n") {
+	for p.Out(p.Mark(), p.Find("\n"), &t) && p.Match("\n") {
 		fmt.Printf("Idx=%1d Row=%1d Col=%1d Text='%s'\n", t.Idx, t.Row, t.Col, t.Text)
 	}
 
 	fmt.Println("---")
 	p = New("\naa\nb\n\n")
 
-	for ; p.Line(); p.Match("\n") {
+	for ; p.Find("\n"); p.Match("\n") {
 		t := p.GetLine()
 		fmt.Printf("Idx=%1d Row=%1d Col=%1d Text='%s'\n", t.Idx, t.Row, t.Col, t.Text)
 	}

@@ -77,7 +77,6 @@ There are a few functions to help handling the parsing.
 | More | Tells if there are more characters to parse. |
 | Find | Advances through the input until it finds a pattern. |
 | FindOut | Same as `Find`, but outputs the matching token on success. |
-| Line | Matches the rest of a line. |
 | GetLine | Returns the current line. |
 | String | Matches a string. |
 | Out | Outputs a token on success. |
