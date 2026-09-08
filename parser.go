@@ -8,7 +8,7 @@ import (
 
 // New creates a new parser for the given source string.
 func New(src string) Parser {
-	return Parser{src: src, Row: 1, Col: 1}
+	return Parser{src: src, Line: 1, Column: 1}
 }
 
 // String matches a string enclosed in the quote character.
@@ -35,7 +35,7 @@ func (p *Parser) GetLine() Token {
 	} else {
 		end = len(p.Head()) + end
 	}
-	return Token{Text: p.src[ini:end], Idx: ini, Row: p.Row, Col: 1}
+	return Token{Text: p.src[ini:end], Offset: ini, Line: p.Line, Column: 1}
 }
 
 // MatchOut matches the given pattern and outputs
@@ -53,7 +53,7 @@ func (p *Parser) ExpOut[P Pattern](pattern P, out *Token) bool {
 
 // Out outputs the corresponding token between the mark m
 // and the current position of the parser if cond is true.
-func (p *Parser) Out(m Parser, cond bool, out *Token) bool {
+func (p *Parser) Out(m Marker, cond bool, out *Token) bool {
 	if cond {
 		*out = p.Token(m)
 	}
@@ -62,7 +62,7 @@ func (p *Parser) Out(m Parser, cond bool, out *Token) bool {
 
 // Undo moves the parser back to the mark m if
 // cond is false and returns the condition.
-func (p *Parser) Undo(m Parser, cond bool) bool {
+func (p *Parser) Undo(m Marker, cond bool) bool {
 	if !cond {
 		p.Back(m)
 	}
@@ -108,7 +108,7 @@ func (p *Parser) Exp[P Pattern](pattern P) bool {
 // Expected triggers an expectation error for the given pattern.
 func (p *Parser) Expected(msg string) bool {
 	if p.Err == nil {
-		p.Err = &Error{Parser: *p, Msg: msg}
+		p.Err = &Error{Marker: p.Marker, ErrLine: p.GetLine().Text, Message: msg}
 	}
 	return false
 }
@@ -209,13 +209,13 @@ func (p *Parser) Char() string {
 // Head returns the portion of the source
 // before the current parser position.
 func (p *Parser) Head() string {
-	return p.src[:p.Idx]
+	return p.src[:p.Offset]
 }
 
 // Tail returns the portion of the source from
 // the current parser position onwards.
 func (p *Parser) Tail() string {
-	return p.src[p.Idx:]
+	return p.src[p.Offset:]
 }
 
 // Body returns the entire source string.
@@ -224,79 +224,81 @@ func (p *Parser) Body() string {
 }
 
 func (p *Parser) advance(v string) bool {
-	p.Idx += len(v)
+	p.Offset += len(v)
 	p.coln(v)
 	return len(v) > 0
 }
 
 func (p *Parser) coln(v string) {
 	for _, r := range v {
-		p.Col++
+		p.Column++
 		if r == '\n' {
-			p.Row++
-			p.Col = 1
+			p.Line++
+			p.Column = 1
 		}
 	}
 }
 
 // Mark returns a mark of the current parser state.
-func (p Parser) Mark() Parser {
-	return p
+func (p Parser) Mark() Marker {
+	return p.Marker
 }
 
 // Back restores the parser state to the given mark.
-func (p *Parser) Back(m Parser) {
-	*p = m
+func (p *Parser) Back(m Marker) {
+	p.Marker = m
 }
 
 // Token returns a token representing the text between
 // the given mark and the current parser position.
-func (p *Parser) Token(m Parser) Token {
-	return Token{Text: p.src[m.Idx:p.Idx], Idx: m.Idx, Row: m.Row, Col: m.Col}
+func (p *Parser) Token(m Marker) Token {
+	return Token{Text: p.src[m.Offset:p.Offset], Marker: m}
 }
 
 // More checks if there are more characters to parse.
 func (p Parser) More() bool {
-	return p.Idx < len(p.src)
+	return p.Offset < len(p.src)
 }
 
 // Parser represents a parser.
 type Parser struct {
+	Marker
 	src string
-	Idx int
-	Row int
-	Col int
 	Err error
 }
 
 // Token represents a token extracted from the source string.
 type Token struct {
+	Marker
 	Text string
-	Idx  int
-	Row  int
-	Col  int
+}
+
+// Error represents a parsing error that occurred during parsing.
+type Error struct {
+	Marker
+	ErrLine string
+	Message string
+}
+
+type Marker struct {
+	Offset int
+	Line   int
+	Column int
+}
+
+func (e *Error) Error() string {
+	tabs := strings.Count(e.ErrLine, "\t") * 3
+	line := strings.ReplaceAll(e.ErrLine, "\t", "    ")
+	a := fmt.Sprintf("failed to parse: line %d char %d: expected %s", e.Line, e.Column, e.Message)
+	b := fmt.Sprintf("%5s |", "")
+	c := fmt.Sprintf("%5d | %s", e.Line, line)
+	d := fmt.Sprintf("%5s |%s%s", "", strings.Repeat(" ", e.Column+tabs), "^--")
+	return fmt.Sprintf("%s\n%s\n%s\n%s", a, b, c, d)
 }
 
 // Pattern represents a pattern that can be matched by the parser.
 type Pattern interface {
 	string | *regexp.Regexp | func(rune) bool
-}
-
-// Error represents a parsing error that occurred during parsing.
-type Error struct {
-	Parser
-	Msg string
-}
-
-func (e *Error) Error() string {
-	line := e.GetLine().Text
-	tabs := strings.Count(line, "\t") * 3
-	line = strings.ReplaceAll(line, "\t", "    ")
-	a := fmt.Sprintf("failed to parse: line %d char %d: expected %s", e.Row, e.Col, e.Msg)
-	b := fmt.Sprintf("%5s |", "")
-	c := fmt.Sprintf("%5d | %s", e.Row, line)
-	d := fmt.Sprintf("%5s |%s%s", "", strings.Repeat(" ", e.Col+tabs), "^--")
-	return fmt.Sprintf("%s\n%s\n%s\n%s", a, b, c, d)
 }
 
 var WORD = regexp.MustCompile(`^\w+`)

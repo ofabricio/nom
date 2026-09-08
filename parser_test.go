@@ -51,7 +51,7 @@ func ExampleParser_GetLine() {
 
 	var t Token
 	for p.Out(p.Mark(), p.Find("\n"), &t) && p.Match("\n") {
-		fmt.Printf("Idx=%1d Row=%1d Col=%1d Text='%s'\n", t.Idx, t.Row, t.Col, t.Text)
+		fmt.Printf("Idx=%1d Ln=%1d Col=%1d Text='%s'\n", t.Offset, t.Line, t.Column, t.Text)
 	}
 
 	fmt.Println("---")
@@ -59,19 +59,19 @@ func ExampleParser_GetLine() {
 
 	for ; p.Find("\n"); p.Match("\n") {
 		t := p.GetLine()
-		fmt.Printf("Idx=%1d Row=%1d Col=%1d Text='%s'\n", t.Idx, t.Row, t.Col, t.Text)
+		fmt.Printf("Idx=%1d Ln=%1d Col=%1d Text='%s'\n", t.Offset, t.Line, t.Column, t.Text)
 	}
 
 	// Output:
-	// Idx=0 Row=1 Col=1 Text=''
-	// Idx=1 Row=2 Col=1 Text='aa'
-	// Idx=4 Row=3 Col=1 Text='b'
-	// Idx=6 Row=4 Col=1 Text=''
+	// Idx=0 Ln=1 Col=1 Text=''
+	// Idx=1 Ln=2 Col=1 Text='aa'
+	// Idx=4 Ln=3 Col=1 Text='b'
+	// Idx=6 Ln=4 Col=1 Text=''
 	// ---
-	// Idx=0 Row=1 Col=1 Text=''
-	// Idx=1 Row=2 Col=1 Text='aa'
-	// Idx=4 Row=3 Col=1 Text='b'
-	// Idx=6 Row=4 Col=1 Text=''
+	// Idx=0 Ln=1 Col=1 Text=''
+	// Idx=1 Ln=2 Col=1 Text='aa'
+	// Idx=4 Ln=3 Col=1 Text='b'
+	// Idx=6 Ln=4 Col=1 Text=''
 }
 
 func ExampleParser_Find() {
