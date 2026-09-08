@@ -19,7 +19,7 @@ func ExampleParser_String() {
 		'\'one\'two\'three\''
 	`)
 
-	for p.Optional(WS) && p.More() {
+	for p.Opt(WS) && p.More() {
 		if m := p.Mark(); p.String("'") {
 			fmt.Println(p.Token(m).Text)
 			continue
@@ -204,7 +204,7 @@ func TestParserExpectedErrorMsg(t *testing.T) {
 
 	for _, tc := range tt {
 		p := New(tc.GiveI)
-		ok := p.Match(tc.GiveM) && p.Expect(tc.GiveE)
+		ok := p.Match(tc.GiveM) && p.Exp(tc.GiveE)
 		assert(t, ok == tc.ThenOk, fmt.Sprint(ok), fmt.Sprint(tc.ThenOk), tc.Descr)
 		exp := strings.Join(tc.Then, "\n")
 		got := fmt.Sprint(p.Err)

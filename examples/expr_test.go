@@ -45,7 +45,7 @@ func (p *ExprParser) Expr(out *Expr) bool {
 		*out = l
 		return true
 	}
-	return p.Expect("expression")
+	return p.Exp("expression")
 }
 
 func (p *ExprParser) Term(out *Expr) bool {
@@ -59,11 +59,11 @@ func (p *ExprParser) Term(out *Expr) bool {
 		*out = l
 		return true
 	}
-	return p.Expect("expression")
+	return p.Exp("expression")
 }
 
 func (p *ExprParser) Fact(out *Expr) bool {
-	return p.Match("(") && p.Expr(out) && p.Expect(")") || p.MatchOut(DIGITS, &out.V)
+	return p.Match("(") && p.Expr(out) && p.Exp(")") || p.MatchOut(DIGITS, &out.V)
 }
 
 type Expr struct {

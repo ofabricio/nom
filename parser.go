@@ -20,7 +20,7 @@ func (p *Parser) String(quote string) bool {
 				p.Next()
 			}
 		}
-		return p.Expect(quote)
+		return p.Exp(quote)
 	}
 	return false
 }
@@ -49,11 +49,11 @@ func (p *Parser) MatchOut[P Pattern](pattern P, out *Token) bool {
 	return p.Out(p.Mark(), p.Match(pattern), out)
 }
 
-// ExpectOut expects the given pattern and outputs the
+// ExpOut expects the given pattern and outputs the
 // corresponding token on success, or triggers an
 // expectation error on failure.
-func (p *Parser) ExpectOut[P Pattern](pattern P, out *Token) bool {
-	return p.Out(p.Mark(), p.Expect(pattern), out)
+func (p *Parser) ExpOut[P Pattern](pattern P, out *Token) bool {
+	return p.Out(p.Mark(), p.Exp(pattern), out)
 }
 
 // Out outputs the corresponding token between the mark m
@@ -63,12 +63,6 @@ func (p *Parser) Out(m Parser, cond bool, out *Token) bool {
 		*out = p.Token(m)
 	}
 	return cond
-}
-
-// Opt makes cond optional. The mark m moves the
-// parser back to it on failure.
-func (p *Parser) Opt(m Parser, cond bool) bool {
-	return p.Undo(m, cond) || true
 }
 
 // Undo moves the parser back to the mark m if
@@ -96,14 +90,14 @@ func (p *Parser) Find[P Pattern](pattern P) bool {
 	return p.More()
 }
 
-// Optional optionally parses the given pattern.
-func (p *Parser) Optional[P Pattern](pattern P) bool {
+// Opt optionally matches the given pattern.
+func (p *Parser) Opt[P Pattern](pattern P) bool {
 	return p.Match(pattern) || true
 }
 
-// Expect expects the given pattern and triggers
+// Exp expects the given pattern and triggers
 // an expectation error if it fails.
-func (p *Parser) Expect[P Pattern](pattern P) bool {
+func (p *Parser) Exp[P Pattern](pattern P) bool {
 	switch pattern := any(pattern).(type) {
 	case string:
 		return p.MatchString(pattern) || p.Expected(pattern)
@@ -114,12 +108,6 @@ func (p *Parser) Expect[P Pattern](pattern P) bool {
 	default:
 		return false
 	}
-}
-
-// Expects expects the given pattern and triggers an expectation
-// error with the given message if it fails.
-func (p *Parser) Expects[P Pattern](pattern P, msg string) bool {
-	return p.Match(pattern) || p.Expected(msg)
 }
 
 // Expected triggers an expectation error for the given pattern.

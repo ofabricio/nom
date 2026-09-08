@@ -69,9 +69,9 @@ There are a few functions to help handling the parsing.
 | :---     | :---        |
 | Match | Matches and advances the parser on success. |
 | MatchOut | Same as `Match`, but outputs the matching token on success. |
-| Expect | Matches and advances the parser on success, but triggers an expectation error on failure. |
-| ExpectOut | Same as `Expect`, but outputs the matching token on success. |
-| Optional | Matches and advances the parser on success, but returns true on failure. |
+| Exp | Matches and advances the parser on success, but triggers an expectation error on failure. |
+| ExpOut | Same as `Exp`, but outputs the matching token on success. |
+| Opt | Matches optionally. |
 | Any | Matches any character and advances the parser on success. |
 | Equal | Tests a pattern without advancing the parser on success. |
 | More | Tells if there are more characters to parse. |

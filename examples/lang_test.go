@@ -61,7 +61,7 @@ func (p *LangParserLow) Parse(src string, out *Lang) error {
 }
 
 func (p *LangParserLow) Program(out *Lang) bool {
-	for p.Optional(WS) {
+	for p.Opt(WS) {
 		if v := (LangFunctionDef{}); p.FunctionDef(&v) {
 			out.D = append(out.D, v)
 			continue
@@ -77,20 +77,14 @@ func (p *LangParserLow) Program(out *Lang) bool {
 
 func (p *LangParserLow) FunctionDef(out *LangFunctionDef) bool {
 	return p.Match("fun") &&
-		p.Expect(HS) &&
-		p.ExpectOut(WORD, &out.Name) &&
-		p.Optional(HS) &&
-		p.Expect("(") &&
-		p.Expect(")") &&
-		p.Optional(HS) &&
-		p.Expect("{") &&
-		p.FunctionBody(&out.Body) &&
-		p.Expect("}")
+		p.Exp(HS) && p.ExpOut(WORD, &out.Name) &&
+		p.Opt(HS) && p.Exp("(") && p.Exp(")") &&
+		p.Opt(HS) && p.Exp("{") && p.FunctionBody(&out.Body) && p.Exp("}")
 }
 
 func (p *LangParserLow) FunctionBody(out *[]LangStatement) bool {
 	var s LangStatement
-	for p.Optional(WS) && p.Statement(&s) {
+	for p.Opt(WS) && p.Statement(&s) {
 		*out = append(*out, s)
 		s = LangStatement{}
 	}
@@ -110,19 +104,14 @@ func (p *LangParserLow) Statement(out *LangStatement) bool {
 }
 
 func (p *LangParserLow) FunctionCall(out *LangFunctionCall) bool {
-	return p.MatchOut(WORD, &out.Name) &&
-		p.Expect("(") &&
-		p.Expect(")")
+	return p.MatchOut(WORD, &out.Name) && p.Exp("(") && p.Exp(")")
 }
 
 func (p *LangParserLow) Assignment(out *LangAssignment) bool {
 	return p.Match("let") &&
-		p.Expect(HS) &&
-		p.ExpectOut(WORD, &out.Name) &&
-		p.Optional(HS) &&
-		p.Expect("=") &&
-		p.Optional(HS) &&
-		p.ExpectOut(DIGITS, &out.Value)
+		p.Exp(HS) && p.ExpOut(WORD, &out.Name) &&
+		p.Opt(HS) && p.Exp("=") &&
+		p.Opt(HS) && p.ExpOut(DIGITS, &out.Value)
 }
 
 type Lang struct {
