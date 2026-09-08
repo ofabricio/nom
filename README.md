@@ -14,7 +14,7 @@ See more examples in the [examples](/examples) folder.
 
 ## Example: Tokenizer
 
-This example shows how to tokenize some text.
+This example shows how to tokenize text.
 See [playground](https://go.dev/play/p/3Cz5GXCJVjc).
 
 ```go
@@ -63,42 +63,43 @@ This parser works by matching a pattern against the current position and advanci
 
 ### Functions
 
-There are a few functions to help handling the parsing.
+There are a few functions to help handle the parsing.
 
 | Function | Description |
 | :---     | :---        |
-| Match | Matches and advances the parser on success. |
-| MatchOut | Same as `Match`, but outputs the matching token on success. |
-| Exp | Matches and advances the parser on success, but triggers an expectation error on failure. |
-| ExpOut | Same as `Exp`, but outputs the matching token on success. |
-| Opt | Matches optionally. |
-| Any | Matches any character and advances the parser on success. |
-| Equal | Tests a pattern without advancing the parser on success. |
-| More | Tells if there are more characters to parse. |
-| Find | Advances through the input until it finds a pattern. |
-| FindOut | Same as `Find`, but outputs the matching token on success. |
-| GetLine | Returns the current line. |
-| Out | Outputs a token on success. |
-| Mark | Sets a mark at the current position. |
-| Back | Sends the parser back to a mark. |
-| Token | Returns the token between two marks. |
-| Rune | Returns the current character as a rune. |
-| Char | Returns the current character as a string. |
-| Next | Advances the parser by one character. |
-| Head | Returns the portion of the input before the current position. |
-| Tail | Returns the portion of the input from the current position onwards. |
-| Body | Returns the entire input. |
-| Undo | Moves the parser back to a mark. |
-| Tokenize | Tokenizes the input based on the provided tokenizers `T` |
-| T | A tokenizer used in `Tokenize` |
+| `Match` | Matches and advances the parser on success. |
+| `MatchOut` | Same as `Match`, but outputs the matching token on success. |
+| `Exp` | Matches and advances the parser on success, but sets an expectation error on failure. |
+| `ExpOut` | Same as `Exp`, but outputs the matching token on success. |
+| `Opt` | Matches optionally. |
+| `Any` | Matches any character and advances the parser on success. |
+| `Equal` | Tests a pattern without advancing the parser. |
+| `More` | Checks if there are more characters to parse. |
+| `Find` | Advances through the input until it finds a pattern. |
+| `FindOut` | Same as `Find`, but outputs the matching token on success. |
+| `GetLine` | Returns the current line. |
+| `Out` | Outputs a token on success. |
+| `Mark` | Sets a mark at the current position. |
+| `Back` | Sends the parser back to a mark. |
+| `Token` | Returns the token between two marks. |
+| `Rune` | Returns the current character as a rune. |
+| `Char` | Returns the current character as a string. |
+| `Next` | Advances the parser by one character. |
+| `Head` | Returns the portion of the input before the current position. |
+| `Tail` | Returns the portion of the input from the current position onwards. |
+| `Body` | Returns the entire input. |
+| `Undo` | Moves the parser back to a mark. |
+| `Tokenize` | Tokenizes the input based on the provided tokenizers `T`. |
+| `T` | A tokenizer used in `Tokenize`. |
 
 ### Regex
 
 There are also a few convenient default regex patterns.
 
 | Regex | Description |
+| :--- | :--- |
 | `WORD` | Regex that matches a word. |
 | `DIGITS` | Regex that matches digits. |
 | `STRING` | Regex that matches a string. |
-| `HS` | Regex that matches horizontal whitespaces characters. |
-| `WS` | Regex that matches whitespaces characters. |
+| `HS` | Regex that matches horizontal whitespace characters. |
+| `WS` | Regex that matches whitespace characters. |
