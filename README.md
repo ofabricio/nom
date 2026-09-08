@@ -53,9 +53,9 @@ func main() {
 ## Example: Parsing a math expression
 
 This example shows how to parse and evaluate a mathematical expression.
-See [playground](https://go.dev/play/p/Qdpjl8VP1ZQ).
+See [playground](https://go.dev/play/p/_vEfGegy9Km).
 
-https://github.com/ofabricio/nom/blob/b37e363829856b707c64201dfb3f16148ce5b2ef/examples/expr_test.go#L11-L84
+https://github.com/ofabricio/nom/blob/96a6b2e3c766b5fa22b1cc446b6d1ad77f1259f4/examples/expr_test.go#L11-L84
 
 ## Documentation
 
