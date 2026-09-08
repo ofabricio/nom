@@ -76,7 +76,6 @@ There are a few functions to help handle the parsing.
 | `Equal` | Tests a pattern without advancing the parser. |
 | `More` | Checks if there are more characters to parse. |
 | `Find` | Advances through the input until it finds a pattern. |
-| `FindOut` | Same as `Find`, but outputs the matching token on success. |
 | `GetLine` | Returns the current line. |
 | `Out` | Outputs a token on success. |
 | `Mark` | Sets a mark at the current position. |
