@@ -78,7 +78,6 @@ There are a few functions to help handling the parsing.
 | Find | Advances through the input until it finds a pattern. |
 | FindOut | Same as `Find`, but outputs the matching token on success. |
 | GetLine | Returns the current line. |
-| String | Matches a string. |
 | Out | Outputs a token on success. |
 | Mark | Sets a mark at the current position. |
 | Back | Sends the parser back to a mark. |
@@ -92,3 +91,14 @@ There are a few functions to help handling the parsing.
 | Undo | Moves the parser back to a mark. |
 | Tokenize | Tokenizes the input based on the provided tokenizers `T` |
 | T | A tokenizer used in `Tokenize` |
+
+### Regex
+
+There are also a few convenient default regex patterns.
+
+| Regex | Description |
+| `WORD` | Regex that matches a word. |
+| `DIGITS` | Regex that matches digits. |
+| `STRING` | Regex that matches a string. |
+| `HS` | Regex that matches horizontal whitespaces characters. |
+| `WS` | Regex that matches whitespaces characters. |

@@ -8,41 +8,39 @@ import (
 	"unicode"
 )
 
-func ExampleParser_String() {
+func ExampleParser_regSTRING() {
 
 	p := New(`
-		''
-		'\''
-		'one'
-		'\'one\''
-		'one\'two\'three'
-		'\'one\'two\'three\''
+		""
+		"\""
+		"one"
+		"\"one\""
+		"one\"two\"three"
+		"\"one\"two\"three\""
+		"ab
+		cd"
 	`)
 
 	for p.Opt(WS) && p.More() {
-		if m := p.Mark(); p.String("'") {
+		if m := p.Mark(); p.Match(STRING) || p.Expected("valid string") {
 			fmt.Println(p.Token(m).Text)
 			continue
 		}
 		break
 	}
-
-	p = New(`"abc`)
-	fmt.Println("---")
-	fmt.Println(p.String("\""), p.Err)
+	fmt.Println(p.Err)
 
 	// Output:
-	// ''
-	// '\''
-	// 'one'
-	// '\'one\''
-	// 'one\'two\'three'
-	// '\'one\'two\'three\''
-	// ---
-	// false failed to parse: line 1 char 5: expected "
+	// ""
+	// "\""
+	// "one"
+	// "\"one\""
+	// "one\"two\"three"
+	// "\"one\"two\"three\""
+	// failed to parse: line 8 char 3: expected valid string
 	//       |
-	//     1 | "abc
-	//       |     ^--
+	//     8 |         "ab
+	//       |         ^--
 }
 
 func ExampleParser_GetLine() {
@@ -260,6 +258,7 @@ func ExampleParser_Char() {
 }
 
 func assert(t *testing.T, cond bool, got, exp string, msg string) {
+	t.Helper()
 	if !cond {
 		t.Errorf("\nMsg: %s\nGot:\n%v\nExp:\n%v\n", msg, got, exp)
 	}

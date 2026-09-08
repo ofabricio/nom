@@ -11,22 +11,7 @@ func New(src string) Parser {
 	return Parser{src: src, Line: 1, Column: 1}
 }
 
-// String matches a string enclosed in the quote character.
-// It escapes the quote character with a backslash.
-func (p *Parser) String(quote string) bool {
-	if p.Match(quote) {
-		for p.More() && !p.Equal(quote) {
-			if !(p.Match("\\") && p.Match(quote)) {
-				p.Next()
-			}
-		}
-		return p.Exp(quote)
-	}
-	return false
-}
-
-// GetLine returns the current line, even if the
-// parser is not in the beginning of the line.
+// GetLine returns the current line.
 func (p *Parser) GetLine() Token {
 	ini := strings.LastIndex(p.Head(), "\n") + 1
 	end := strings.Index(p.Tail(), "\n")
@@ -303,5 +288,6 @@ type Pattern interface {
 
 var WORD = regexp.MustCompile(`^\w+`)
 var DIGITS = regexp.MustCompile(`^\d+`)
+var STRING = regexp.MustCompile(`^"([^"\n\\]|\\.)*"`) // Remove the \n for multi-line strings.
 var HS = regexp.MustCompile(`^[ \t]+`)
 var WS = regexp.MustCompile(`^\s+`)
