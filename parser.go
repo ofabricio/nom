@@ -23,19 +23,6 @@ func (p *Parser) GetLine() Token {
 	return Token{Text: p.src[ini:end], Offset: ini, Line: p.Line, Column: 1}
 }
 
-// MatchOut matches the given pattern and outputs
-// the corresponding token on success.
-func (p *Parser) MatchOut[P Pattern](pattern P, out *Token) bool {
-	return p.Out(p.Mark(), p.Match(pattern), out)
-}
-
-// ExpOut expects the given pattern and outputs the
-// corresponding token on success, or triggers an
-// expectation error on failure.
-func (p *Parser) ExpOut[P Pattern](pattern P, out *Token) bool {
-	return p.Out(p.Mark(), p.Exp(pattern), out)
-}
-
 // Out outputs the corresponding token between the mark m
 // and the current position of the parser if cond is true.
 func (p *Parser) Out(m Marker, cond bool, out *Token) bool {
@@ -70,6 +57,13 @@ func (p *Parser) Opt[P Pattern](pattern P) bool {
 	return p.Match(pattern) || true
 }
 
+// ExpOut expects the given pattern and outputs the
+// corresponding token on success, or triggers an
+// expectation error on failure.
+func (p *Parser) ExpOut[P Pattern](pattern P, out *Token) bool {
+	return p.Out(p.Mark(), p.Exp(pattern), out)
+}
+
 // Exp expects the given pattern and triggers
 // an expectation error if it fails.
 func (p *Parser) Exp[P Pattern](pattern P) bool {
@@ -91,6 +85,12 @@ func (p *Parser) Expected(msg string) bool {
 		p.Err = &Error{Marker: p.Marker, ErrLine: p.GetLine().Text, Message: msg}
 	}
 	return false
+}
+
+// MatchOut matches the given pattern and outputs
+// the corresponding token on success.
+func (p *Parser) MatchOut[P Pattern](pattern P, out *Token) bool {
+	return p.Out(p.Mark(), p.Match(pattern), out)
 }
 
 // Match matches the given pattern and advances the parser
