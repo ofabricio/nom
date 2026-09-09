@@ -94,7 +94,7 @@ func (p *Parser) MatchOut[P Pattern](pattern P, out *Token) bool {
 }
 
 // Match matches the given pattern and advances the parser
-// on success. Returns true if it matches.
+// on success.
 func (p *Parser) Match[P Pattern](pattern P) bool {
 	switch pattern := any(pattern).(type) {
 	case string:
@@ -109,19 +109,20 @@ func (p *Parser) Match[P Pattern](pattern P) bool {
 }
 
 // MatchString matches the given string and advances the parser
-// on success. Returns true if it matches.
+// on success.
 func (p *Parser) MatchString(v string) bool {
 	return p.EqualString(v) && p.advance(v)
 }
 
-// MatchRegex matches the given regular expression and advances
-// the parser on success. Returns true if it matches.
+// MatchRegex matches the given regular expression and advances the
+// parser on success. The regex must start with a ^ to match from
+// the current parser position.
 func (p *Parser) MatchRegex(v *regexp.Regexp) bool {
 	return p.advance(v.FindString(p.Tail()))
 }
 
 // MatchFunc matches the given rune function and advances the
-// parser on success. Returns true if it matches.
+// parser on success.
 func (p *Parser) MatchFunc(f func(rune) bool) bool {
 	r := p.Rune()
 	return f(r) && p.advance(string(r))
